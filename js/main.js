@@ -138,24 +138,21 @@ document.addEventListener('DOMContentLoaded', function(){
     if(route === 'members'){
       const enterBtn = document.getElementById('enterMembers');
       if(enterBtn){
-        enterBtn.addEventListener('click', async ()=>{
+        enterBtn.addEventListener('click', ()=>{
           const p = prompt('Enter members password');
           if(!p) return;
           try{
-            const enc = new TextEncoder();
-            const data = enc.encode(p);
-            const hashBuf = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuf));
-            const h = hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
-            const MEMBERS_HASH = 'REPLACE_WITH_SHA256_HASH';
-            if(h === MEMBERS_HASH){
+            const MEMBERS_OBF = 'SGFyYm91clZvaWNlczEh';
+            let real = '';
+            try{ real = atob(MEMBERS_OBF); }catch(e){ real = ''; }
+            if(p === real){
               const membersContent = document.getElementById('membersContent');
               const membersArea = document.getElementById('membersArea');
               if(membersContent && membersArea){
                 membersContent.style.display='block';
                 membersArea.style.display='none';
                 const driveLink = document.getElementById('driveLink');
-                if(driveLink) driveLink.href = 'https://drive.google.com/drive/folders/YOUR_FOLDER_ID';
+                if(driveLink) driveLink.href = 'https://drive.google.com/drive/folders/1e3sMxit1UwY-nMt5_-gNMdufY9m0hfFm';
               }
             } else {
               alert('Incorrect password');

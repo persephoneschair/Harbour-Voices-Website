@@ -40,8 +40,9 @@ body{
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--gap);margin-top:20px}
 .card{background:var(--white);border-radius:var(--radius);box-shadow:0 6px 18px rgba(16,24,40,0.06);padding:16px;transition:transform .18s,box-shadow .18s}
 .card:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(16,24,40,0.1)}
-.btn{background:var(--blue);color:var(--white);padding:10px 14px;border-radius:8px;border:0;cursor:pointer;transition:background .12s}
-.btn:hover{background:darken(var(--blue),5%)}
+.btn{background:var(--blue);color:var(--white);padding:10px 14px;border-radius:8px;border:0;cursor:pointer;transition:background .12s,transform .12s,filter .12s}
+.btn:hover{filter:brightness(0.92);transform:translateY(-2px)}
+.btn:focus-visible{outline:3px solid rgba(11,87,164,0.18);outline-offset:2px}
 
 .site-footer{border-top:1px solid rgba(11,87,164,0.06);padding:18px 0;margin-top:40px;text-align: center;}
 

@@ -4,7 +4,7 @@
 // Example CSV map:
 // const SHEET_CSV_MAP = { 'News': 'https://docs.google.com/spreadsheets/d/.../pub?output=csv&gid=0' };
 const SHEET_CSV_MAP = {
-  // 'News': '',
+'About': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=0&single=true&output=csv'
 };
 
 const SHEET_ID = '';

@@ -64,7 +64,7 @@ input:focus,textarea:focus,button:focus,a:focus{outline-color:rgba(11,87,164,0.2
 #app.is-hidden{opacity:0;transform:translateY(6px);pointer-events:none}
 
 /* Who's Who cards */
-.whos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--gap);margin-top:20px}
+.whos-grid{display:grid;grid-template-columns:1fr;gap:var(--gap);margin-top:20px}
 .whos-card{background:var(--white);border-radius:var(--radius);box-shadow:0 6px 18px rgba(16,24,40,0.06);padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;overflow:hidden}
 .whos-card:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(16,24,40,0.1)}
 .whos-card img{width:96px;height:96px;border-radius:8px;object-fit:cover;flex:0 0 96px;background:#e6eef8;transition:width .28s ease,height .28s ease,flex-basis .28s ease,transform .28s}
@@ -78,3 +78,17 @@ input:focus,textarea:focus,button:focus,a:focus{outline-color:rgba(11,87,164,0.2
 .whos-card .bio p{margin:0;color:#111}
 .whos-card.no-bio{cursor:default}
 .whos-card .meta .muted{color:var(--muted)}
+
+/* News story list (vertical stories, not cards) */
+.story{display:flex;gap:16px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(11,87,164,0.06)}
+.story:last-child{border-bottom:0}
+.story img{width:140px;height:96px;object-fit:cover;border-radius:8px;flex:0 0 140px;background:#e6eef8}
+.story .content{flex:1;min-width:0}
+.story .content h3{margin:0;color:var(--blue);font-size:20px}
+.story .content .date{color:var(--muted);font-size:13px;margin-top:6px}
+.story .content p{margin-top:8px;color:#111}
+
+@media(max-width:800px){
+  .story{flex-direction:column}
+  .story img{width:100%;height:auto;flex:auto}
+}

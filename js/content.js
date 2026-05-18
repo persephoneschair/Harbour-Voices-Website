@@ -4,7 +4,8 @@
 // const SHEET_CSV_MAP = { 'News': 'https://docs.google.com/spreadsheets/d/.../pub?output=csv&gid=0' };
 const SHEET_CSV_MAP = {
 'About': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=0&single=true&output=csv',
-'WhosWho' : 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=223590804&single=true&output=csv'
+'WhosWho' : 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=223590804&single=true&output=csv',
+"News": 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=2020153883&single=true&output=csv'
 };
 
 // NOTE: legacy gviz/Sheet ID fallback removed — use `SHEET_CSV_MAP`.
@@ -106,7 +107,8 @@ function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g,fu
 window.loadContent = async function(route){
   // News
   if(document.getElementById('newsList')){
-    const rows = await fetchSheet('News'); renderCards('#newsList', rows);
+    const rows = await fetchSheet('News');
+    renderStories('#newsList', rows);
   }
   if(document.getElementById('upcomingList')){
     const rows = await fetchSheet('Upcoming'); renderCards('#upcomingList', rows);
@@ -203,6 +205,51 @@ window.loadContent = async function(route){
     }
   }
 };
+
+// Render news stories (latest shown at top). Expects fields: Header, Date, Info, Picture
+function renderStories(containerSelector, rows){
+  const el = document.querySelector(containerSelector);
+  if(!el) return;
+  el.innerHTML = '';
+  if(!rows || rows.length === 0){ el.innerHTML = '<p class="muted">No stories found.</p>'; return; }
+
+  const placeholderSvg = encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'>"+
+    "<rect width='100%' height='100%' fill='%23e6eef8'/>"+
+    "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%239aa9bf' font-family='Inter,Arial' font-size='18'>Image not found</text>"+
+    "</svg>");
+  const fallback = 'data:image/svg+xml;utf8,' + placeholderSvg;
+
+  // iterate bottom-up so latest spreadsheet rows appear at the top
+  for(let i = rows.length - 1; i >= 0; i--){
+    const r = rows[i] || {};
+    const header = r.Header || r.header || r.Title || r.title || '';
+    const date = r.Date || r.date || '';
+    const info = r.Info || r.info || r.Body || r.body || r.Description || r.description || '';
+    const picture = (r.Picture || r.picture || r.Image || r.image || '').toString().trim();
+
+    const story = document.createElement('article'); story.className = 'story';
+
+    if(picture){
+      const img = document.createElement('img');
+      img.alt = header ? `Image for ${header}` : 'Story image';
+      img.loading = 'lazy';
+      img.src = picture;
+      img.onerror = function(){ this.onerror = null; this.src = fallback; };
+      story.appendChild(img);
+    }
+
+    const content = document.createElement('div'); content.className = 'content';
+    const h = document.createElement('h3'); h.innerHTML = escapeHtml(header);
+    const d = document.createElement('div'); d.className = 'date'; d.textContent = date;
+    const p = document.createElement('p'); p.innerHTML = escapeHtml(info);
+    content.appendChild(h);
+    if(date) content.appendChild(d);
+    if(info) content.appendChild(p);
+
+    story.appendChild(content);
+    el.appendChild(story);
+  }
+}
 
 // Backwards-compatible auto-load for pages that exist at initial load
 document.addEventListener('DOMContentLoaded', ()=>{ if(window.loadContent) window.loadContent(); });

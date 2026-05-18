@@ -1,0 +1,2 @@
+If you see this file, files created by the assistant are present in the workspace.
+If not, try Refresh Explorer or Reload Window in VS Code.

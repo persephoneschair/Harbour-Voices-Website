@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Harbour Voices</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="theme-color" content="#0b57a4">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#home">
+        <img src="assets/logo.png" alt="Harbour Voices" class="logo">
+      </a>
+      <button id="navToggle" class="nav-toggle" aria-expanded="false">☰</button>
+      <nav class="site-nav" id="siteNav">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#whoswho">Who's Who</a>
+        <a href="#news">News</a>
+        <a href="#upcoming">Upcoming Events</a>
+        <a href="#previous">Past Events</a>
+        <a href="#members">Members</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  
+
+  <main id="app">
+    <!-- Content will be injected here from templates below -->
+  </main>  
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span><a href="contact.html">Get in touch</a></span>
+    </div>
+  </footer>
+
+  <!-- Page templates (rendered client-side) -->
+  <template id="tpl-home">
+    <section class="hero textured-bg">
+      <div class="container hero-inner">
+        <img src="assets/logo.png" alt="Harbour Voices" class="hero-logo">
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-about">
+    <section class="container">
+      <h1>About Us</h1>
+      <p class="muted">This page is populated from a public Google Sheet. Replace this paragraph by publishing your Google Sheet and setting the `SHEET_ID` in <code>js/content.js</code>.</p>
+      <div id="aboutUs"></div>
+      <div id="ourStory"></div>
+    </section>
+  </template>
+
+  <template id="tpl-contact">
+    <section class="container">
+      <h1>Contact Us</h1>
+      <p>Email: <a href="mailto:info@example.org">info@example.org</a></p>
+      <form id="contactForm">
+        <label>Name<br><input name="name" required></label>
+        <label>Email<br><input name="email" type="email" required></label>
+        <label>Message<br><textarea name="message" rows="6" required></textarea></label>
+        <button class="btn" type="submit">Send</button>
+      </form>
+    </section>
+  </template>
+
+  <template id="tpl-members">
+    <section class="container">
+      <h1>Members Area</h1>
+      <div id="membersArea">
+        <p>This area is password protected. Please enter the members password to access sheet music links.</p>
+        <button id="enterMembers" class="btn">Enter Members Area</button>
+      </div>
+      <div id="membersContent" style="display:none;">
+        <h2>Sheet Music & Resources</h2>
+        <p>Authorized members may download music from our Google Drive: <a id="driveLink" href="#" target="_blank">Open Drive</a></p>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-news">
+    <section class="container">
+      <h1>News</h1>
+      <div id="newsList" class="cards"></div>
+    </section>
+  </template>
+
+  <template id="tpl-upcoming">
+    <section class="container">
+      <h1>Upcoming Events</h1>
+      <div id="upcomingList" class="cards"></div>
+    </section>
+  </template>
+
+  <template id="tpl-previous">
+    <section class="container">
+      <h1>Previous Events</h1>
+      <div id="previousList" class="cards"></div>
+    </section>
+  </template>
+
+  <template id="tpl-whoswho">
+    <section class="container">
+      <h1>Who's Who</h1>
+      <div id="whosWho">
+        <h2>Conductor</h2>
+        <p>[Conductor name and bio]</p>
+        <h2>Guest Conductors</h2>
+        <ul>
+          <li>[Guest conductor 1]</li>
+        </ul>
+        <h2>Committee</h2>
+        <ul>
+          <li>[Chair] — Name</li>
+          <li>[Treasurer] — Name</li>
+        </ul>
+      </div>
+    </section>
+  </template>
+
+  <script src="js/main.js"></script>
+  <script src="js/content.js"></script>
+</body>
+</html>

@@ -174,15 +174,13 @@ window.loadContent = async function(route){
         img.onerror = function(){ this.onerror = null; this.src = fallback; };
 
         const meta = document.createElement('div'); meta.className = 'meta';
-        const picnameEl = document.createElement('div'); picnameEl.className = 'picname'; picnameEl.textContent = photo || '(no image specified)';
-        const roleEl = document.createElement('div'); roleEl.className = 'role'; roleEl.textContent = role || '';
         const nameEl = document.createElement('div'); nameEl.className = 'name'; nameEl.textContent = name || '';
+        const roleEl = document.createElement('div'); roleEl.className = 'role'; roleEl.textContent = role || '';
         const bioEl = document.createElement('div'); bioEl.className = 'bio';
         if(bio){ bioEl.innerHTML = '<p>' + escapeHtml(bio) + '</p>'; }
 
-        meta.appendChild(picnameEl);
-        meta.appendChild(roleEl);
         meta.appendChild(nameEl);
+        meta.appendChild(roleEl);
         meta.appendChild(bioEl);
 
         card.appendChild(img);

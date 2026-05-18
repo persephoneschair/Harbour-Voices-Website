@@ -1,8 +1,81 @@
-// Fetch and parse Google Sheets published as JSON (gviz format)
-// Set SHEET_ID to your published spreadsheet ID and call the functions below as needed.
-const SHEET_ID = '1Ocb2jOeygDfP2lMTeR9FU0zPldH1Nir_a9bfbYpFO_0';
+// Fetch and parse Google Sheets. Two supported modes:
+// 1) Published as CSV: set `SHEET_CSV_MAP` mapping sheet names to their published CSV URLs
+// 2) Legacy: set `SHEET_ID` to use the gviz JSON endpoint (existing behavior)
+// Example CSV map:
+// const SHEET_CSV_MAP = { 'News': 'https://docs.google.com/spreadsheets/d/.../pub?output=csv&gid=0' };
+const SHEET_CSV_MAP = {
+  // 'News': '',
+};
+
+const SHEET_ID = '';
+
+// Very small CSV parser that handles quoted fields and newlines inside quotes.
+function parseCSV(text){
+  const rows = [];
+  let cur = [];
+  let i = 0;
+  const len = text.length;
+  while(i < len){
+    let field = '';
+    let inQuotes = false;
+    if(text[i] === '"'){
+      inQuotes = true;
+      i++;
+      while(i < len){
+        if(text[i] === '"'){
+          if(text[i+1] === '"'){
+            field += '"'; i += 2; continue;
+          }
+          i++; break;
+        }
+        field += text[i++];
+      }
+      // after closing quote, skip until comma or newline
+      while(i < len && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') i++;
+    } else {
+      while(i < len && text[i] !== ',' && text[i] !== '\n' && text[i] !== '\r') field += text[i++];
+    }
+    cur.push(field);
+    // handle separators
+    if(i >= len){ rows.push(cur); break; }
+    if(text[i] === ',') { i++; continue; }
+    // newline handling (CRLF or LF)
+    if(text[i] === '\r'){
+      i++; if(text[i] === '\n') i++; rows.push(cur); cur = []; continue;
+    }
+    if(text[i] === '\n'){ i++; rows.push(cur); cur = []; continue; }
+  }
+  // edge: if last char was comma, ensure row captured
+  if(cur.length && (rows.length === 0 || rows[rows.length-1] !== cur)) rows.push(cur);
+  return rows;
+}
 
 async function fetchSheet(sheetName){
+  // If a CSV URL for this sheetName is provided, fetch and parse CSV
+  const csvUrl = SHEET_CSV_MAP && SHEET_CSV_MAP[sheetName];
+  if(csvUrl){
+    try{
+      const res = await fetch(csvUrl);
+      const text = await res.text();
+      const table = parseCSV(text);
+      if(!table || table.length === 0) return [];
+      const headers = table[0].map(h=> (h||'').toString());
+      const rows = [];
+      for(let r=1;r<table.length;r++){
+        const row = {};
+        for(let c=0;c<headers.length;c++){
+          row[headers[c] || `col${c}`] = table[r][c] !== undefined ? table[r][c] : '';
+        }
+        rows.push(row);
+      }
+      return rows;
+    }catch(e){
+      console.warn('Failed to fetch/parse CSV for', sheetName, e);
+      return [];
+    }
+  }
+
+  // Fallback to legacy gviz JSON endpoint when SHEET_ID is provided
   if(!SHEET_ID || SHEET_ID.startsWith('REPLACE')) return [];
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url);

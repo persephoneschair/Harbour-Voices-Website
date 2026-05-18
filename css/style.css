@@ -58,3 +58,24 @@ input,textarea{width:100%;padding:8px;border:1px solid #e6eef8;border-radius:8px
 
 /* subtle focus */
 input:focus,textarea:focus,button:focus,a:focus{outline-color:rgba(11,87,164,0.25)}
+
+/* Page transitions: fade out current content and fade in new content */
+#app{opacity:1;transition:opacity .35s ease, transform .25s ease;will-change:opacity,transform}
+#app.is-hidden{opacity:0;transform:translateY(6px);pointer-events:none}
+
+/* Who's Who cards */
+.whos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--gap);margin-top:20px}
+.whos-card{background:var(--white);border-radius:var(--radius);box-shadow:0 6px 18px rgba(16,24,40,0.06);padding:12px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:transform .18s,box-shadow .18s;overflow:hidden}
+.whos-card:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(16,24,40,0.1)}
+.whos-card img{width:96px;height:96px;border-radius:8px;object-fit:cover;flex:0 0 96px;background:#e6eef8}
+.whos-card .meta{flex:1;min-width:0}
+.whos-card .picname{font-size:12px;color:var(--muted)}
+.whos-card .role{color:var(--blue);font-weight:600;margin-top:6px}
+.whos-card .name{display:none;color:var(--blue);font-weight:700;margin:6px 0}
+.whos-card .bio{max-height:0;overflow:hidden;transition:max-height .28s ease,padding .28s; padding-top:0}
+.whos-card.expanded{background:linear-gradient(180deg,rgba(11,87,164,0.02),rgba(255,255,255,0.02))}
+.whos-card.expanded .name{display:block}
+.whos-card.expanded .bio{max-height:600px;padding-top:10px}
+.whos-card .bio p{margin:0;color:#111}
+.whos-card.no-bio{cursor:default}
+.whos-card .meta .muted{color:var(--muted)}

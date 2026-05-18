@@ -53,9 +53,7 @@
   <template id="tpl-about">
     <section class="container">
       <h1>About Us</h1>
-      <p class="muted">This page is populated from a public Google Sheet. You can either publish each sheet as CSV and set the `SHEET_CSV_MAP` in <code>js/content.js</code>, or set the `SHEET_ID` to use the legacy Google Sheets JSON endpoint.</p>
       <div id="aboutUs"></div>
-      <div id="ourStory"></div>
     </section>
   </template>
 
@@ -110,19 +108,7 @@
   <template id="tpl-whoswho">
     <section class="container">
       <h1>Who's Who</h1>
-      <div id="whosWho">
-        <h2>Conductor</h2>
-        <p>[Conductor name and bio]</p>
-        <h2>Guest Conductors</h2>
-        <ul>
-          <li>[Guest conductor 1]</li>
-        </ul>
-        <h2>Committee</h2>
-        <ul>
-          <li>[Chair] — Name</li>
-          <li>[Treasurer] — Name</li>
-        </ul>
-      </div>
+      <div id="whosWho" class="cards whos-grid"></div>
     </section>
   </template>
 

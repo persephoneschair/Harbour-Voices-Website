@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // Simple hash-based router and active-link handling for SPA
 (function setupRouter(){
+  const app = document.getElementById('app');
+
   function setActive(route){
     document.querySelectorAll('.site-nav a, a.brand').forEach(a=>a.classList.remove('active'));
     const selector = `.site-nav a[href="#${route}"]`;
@@ -24,9 +26,45 @@ document.addEventListener('DOMContentLoaded', function(){
     else if(brand) brand.classList.remove('active');
   }
 
+  function animateOut(){
+    return new Promise(resolve=>{
+      if(!app) return resolve();
+      let done = false;
+      function onEnd(e){
+        if(e.propertyName === 'opacity'){
+          if(done) return; done = true;
+          app.removeEventListener('transitionend', onEnd);
+          resolve();
+        }
+      }
+      app.addEventListener('transitionend', onEnd);
+      // trigger the CSS fade-out
+      app.classList.add('is-hidden');
+      // safety timeout in case transitionend doesn't fire
+      setTimeout(()=>{ if(!done){ done=true; app.removeEventListener('transitionend', onEnd); resolve(); } }, 600);
+    });
+  }
+
+  function animateIn(){
+    return new Promise(resolve=>{
+      if(!app) return resolve();
+      let done = false;
+      function onEnd(e){
+        if(e.propertyName === 'opacity'){
+          if(done) return; done = true;
+          app.removeEventListener('transitionend', onEnd);
+          resolve();
+        }
+      }
+      app.addEventListener('transitionend', onEnd);
+      // ensure starting hidden state is removed to play fade-in
+      requestAnimationFrame(()=> requestAnimationFrame(()=> app.classList.remove('is-hidden')));
+      setTimeout(()=>{ if(!done){ done=true; app.removeEventListener('transitionend', onEnd); resolve(); } }, 600);
+    });
+  }
+
   function render(route){
     const tpl = document.getElementById('tpl-' + route);
-    const app = document.getElementById('app');
     if(!app) return;
     if(tpl){
       app.innerHTML = '';
@@ -38,6 +76,8 @@ document.addEventListener('DOMContentLoaded', function(){
       app.innerHTML = `<section class="container"><h1>Page not found</h1><p>No content for ${route}</p></section>`;
       setActive('');
     }
+    // after content is injected, ensure we fade it in
+    animateIn().catch(()=>{});
   }
 
   function currentRoute(){
@@ -45,8 +85,40 @@ document.addEventListener('DOMContentLoaded', function(){
     return h || 'home';
   }
 
+  // Intercept clicks on internal links so we can animate out first
+  document.addEventListener('click', function(e){
+    const a = e.target.closest && e.target.closest('a');
+    if(!a) return;
+    const href = a.getAttribute('href');
+    if(!href) return;
+    // Hash navigation within SPA
+    if(href.startsWith('#')){
+      const target = (href.replace(/^#/, '') || 'home');
+      if(target === currentRoute()){
+        e.preventDefault();
+        return;
+      }
+      e.preventDefault();
+      animateOut().then(()=>{ location.hash = '#' + target; });
+      return;
+    }
+
+    // Other internal links (relative paths) - fade out then navigate
+    const isExternal = href.match(/^([a-z]+:)?\/\//i) || href.startsWith('mailto:') || href.startsWith('tel:');
+    if(!isExternal && a.target !== '_blank'){
+      e.preventDefault();
+      animateOut().then(()=>{ window.location = href; });
+    }
+  });
+
+  // Handle back/forward & hash changes
   window.addEventListener('hashchange', ()=> render(currentRoute()));
-  document.addEventListener('DOMContentLoaded', ()=> render(currentRoute()));
+
+  // On first load, start hidden then render and fade in
+  document.addEventListener('DOMContentLoaded', ()=>{
+    if(app) app.classList.add('is-hidden');
+    render(currentRoute());
+  });
 
   // Attach behaviors for specific pages after template is injected
   function attachPageHandlers(route){

@@ -1,13 +1,13 @@
-// Fetch and parse Google Sheets. Two supported modes:
-// 1) Published as CSV: set `SHEET_CSV_MAP` mapping sheet names to their published CSV URLs
-// 2) Legacy: set `SHEET_ID` to use the gviz JSON endpoint (existing behavior)
+// Fetch and parse Google Sheets published as CSV.
+// Configure `SHEET_CSV_MAP` mapping sheet names to their published CSV URLs.
 // Example CSV map:
 // const SHEET_CSV_MAP = { 'News': 'https://docs.google.com/spreadsheets/d/.../pub?output=csv&gid=0' };
 const SHEET_CSV_MAP = {
-'About': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=0&single=true&output=csv'
+'About': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=0&single=true&output=csv',
+'WhosWho' : 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI0aB0F73jFZ7QvOjHQv-gSHJZaIVnIQK7hCGasxbYFKIJbrLtiR5XS57RZKhZsnRNod0iymIAin7q/pub?gid=223590804&single=true&output=csv'
 };
 
-const SHEET_ID = '';
+// NOTE: legacy gviz/Sheet ID fallback removed — use `SHEET_CSV_MAP`.
 
 // Very small CSV parser that handles quoted fields and newlines inside quotes.
 function parseCSV(text){
@@ -75,21 +75,8 @@ async function fetchSheet(sheetName){
     }
   }
 
-  // Fallback to legacy gviz JSON endpoint when SHEET_ID is provided
-  if(!SHEET_ID || SHEET_ID.startsWith('REPLACE')) return [];
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-  const res = await fetch(url);
-  const text = await res.text();
-  // The response is JSON wrapped in a function call, strip it
-  const jsonText = text.replace(/^.*?\(/s,'').replace(/\);?\s*$/,'');
-  const data = JSON.parse(jsonText);
-  const cols = data.table.cols.map(c=> (c.label||c.id||'col').toString());
-  const rows = data.table.rows.map(r=>{
-    const obj = {};
-    r.c.forEach((cell,i)=>{ obj[cols[i]||`col${i}`] = cell ? cell.v : '' });
-    return obj;
-  });
-  return rows;
+  // No CSV mapping found for this sheetName — return empty array.
+  return [];
 }
 
 function renderCards(containerSelector, rows){
@@ -157,9 +144,64 @@ window.loadContent = async function(route){
   }
   // Who's who
   if(document.getElementById('whosWho')){
-    const rows = await fetchSheet('WhosWho'); if(rows && rows.length){
-      const root = document.getElementById('whosWho'); root.innerHTML = '';
-      rows.forEach(r=>{ const section = document.createElement('section'); section.innerHTML = `<h3>${escapeHtml(r.Role||r.role||'')}</h3><p>${escapeHtml(r.Description||r.Bio||r.bio||'')}</p>`; root.appendChild(section); });
+    const rows = await fetchSheet('WhosWho');
+    const root = document.getElementById('whosWho');
+    root.innerHTML = '';
+    if(rows && rows.length){
+      const placeholderSvg = encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'>"+
+        "<rect width='100%' height='100%' fill='%23e6eef8'/>"+
+        "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%239aa9bf' font-family='Inter,Arial' font-size='18'>Image not found</text>"+
+        "</svg>");
+      const fallback = 'data:image/svg+xml;utf8,' + placeholderSvg;
+
+      rows.forEach(r=>{
+        const name = r.Name || r.name || '';
+        const role = r.Role || r.role || '';
+        const bio = r.Bio || r.bio || r.Description || r.description || '';
+        const photo = (r.Photo || r.photo || r.Picture || r.picture || '').toString().trim();
+
+        const card = document.createElement('article');
+        card.className = 'whos-card';
+        if(!bio) card.classList.add('no-bio');
+        card.setAttribute('tabindex','0');
+        card.setAttribute('role','button');
+        card.setAttribute('aria-expanded','false');
+
+        const img = document.createElement('img');
+        img.alt = name ? (`Photo of ${name}`) : 'Person photo';
+        img.loading = 'lazy';
+        if(photo){ img.src = 'assets/' + photo; } else { img.src = fallback; }
+        img.onerror = function(){ this.onerror = null; this.src = fallback; };
+
+        const meta = document.createElement('div'); meta.className = 'meta';
+        const picnameEl = document.createElement('div'); picnameEl.className = 'picname'; picnameEl.textContent = photo || '(no image specified)';
+        const roleEl = document.createElement('div'); roleEl.className = 'role'; roleEl.textContent = role || '';
+        const nameEl = document.createElement('div'); nameEl.className = 'name'; nameEl.textContent = name || '';
+        const bioEl = document.createElement('div'); bioEl.className = 'bio';
+        if(bio){ bioEl.innerHTML = '<p>' + escapeHtml(bio) + '</p>'; }
+
+        meta.appendChild(picnameEl);
+        meta.appendChild(roleEl);
+        meta.appendChild(nameEl);
+        meta.appendChild(bioEl);
+
+        card.appendChild(img);
+        card.appendChild(meta);
+
+        // Toggle expansion (only if bio exists)
+        if(bio){
+          const toggle = ()=>{
+            const isExpanded = card.classList.toggle('expanded');
+            card.setAttribute('aria-expanded', String(isExpanded));
+          };
+          card.addEventListener('click', toggle);
+          card.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+        }
+
+        root.appendChild(card);
+      });
+    } else {
+      root.innerHTML = '<p class="muted">No entries found.</p>';
     }
   }
 };
